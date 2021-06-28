@@ -17,6 +17,9 @@
   },
   "homepage": "https://github.com/grreprog/std-express#readme",
   "dependencies": {
-    "express": "^4.17.1"
+    "connect-redis": "^6.0.0",
+    "express": "^4.17.1",
+    "express-session": "^1.17.2",
+    "redis": "^3.1.2"
   }
 }
