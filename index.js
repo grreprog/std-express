@@ -6,6 +6,8 @@ const session = require('express-session');
 const redis = require('redis');
 const redisStore = require('connect-redis')(session);
 
+const routes = require('./route/route_main.js');
+
 const port = 3000;
 
 function server() {
@@ -13,60 +15,43 @@ function server() {
   global.app.redisClient = redis.createClient();
 
   app.use(session({
-    store : new redisStore({client : global.app.redisClient}),
-    saveUninitialized : false,
     secret : 'namannothingcat',
+    store : new redisStore({
+      client : global.app.redisClient,
+      host : 'localhost',
+      port : '6379',
+      ttl : 255
+    }),
+    saveUninitialized : false,    
     resave : false,
   }));
 
-  app.use((req, res, next) => {
-    if (!req.session) {
-      return next(new Error('oh no'));
-    }
+  const middlewareStack = [];
 
+  function testA(req, res, next) {
+    console.log('testA');
     next();
-  })
+  }
 
-  app.get('/', (req, res) => {
-    res.send('What do you want?!?');
-  });
+  function testB(req, res, next) {
+    console.log('testB');
+    next();
+  }
 
-  app.get('/session-test', (req, res) => {
-    res.send('not yet session id');
-  });
+  function testC(req, res, next) {
+    console.log('testC');
+    res.send(200);
+  }  
 
-  app.get('/redis-store-count', (req, res) => {
-    console.log(`req.session.count = ${req.session.count}`);
-    let session = req.session;
-    if (session && session.count) {
-      session.count++;
-    }
-    else {
-      session.count = 1;
-    }
-    res.send('count is ' + session.count + ' ' + session.id);
-  })
+  app.use('/', routes);
 
-  app.get('/set-extradata', (req, res) => {
-    req.session.extradata = {
-      a : 10,
-      b : 15, 
-      c : 'extradata 다'
-    };
-
+  app.use('/test2', (req, res, next) => {
+    console.log('test2');
     res.send(200);
   })
 
-  app.get('/show-session', (req, res) => {
-    console.log(req.session.extradata);
-
-    res.send(200);
-  })
-
-  app.get('/session-destroy', (req, res) => {
-    req.session.destroy();
-    res.send('session destroyed!');
-  })
+  let arrFunc = [testA, testB, testC];
+  global.app['get']('/test', arrFunc);
   
   app.listen(port, () => {
     console.log(`listening ... port(${port})`);
