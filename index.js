@@ -41,17 +41,13 @@ function server() {
   function testC(req, res, next) {
     console.log('testC');
     res.send(200);
-  }  
-
-  app.use('/', routes);
-
-  app.use('/test2', (req, res, next) => {
-    console.log('test2');
-    res.send(200);
-  })
+  }
 
   let arrFunc = [testA, testB, testC];
-  global.app['get']('/test', arrFunc);
+  app.get('/test', arrFunc);
+  //global.app['get']('/test', arrFunc);
+
+  app.use('/', routes);
   
   app.listen(port, () => {
     console.log(`listening ... port(${port})`);
